@@ -20,13 +20,18 @@ const FALLBACK_IMAGES = [
 const ArticleCard = ({ article }: Props) => {
   const isVerified = VERIFIED_SOURCES.includes(article.source);
   
-  // Deterministic fallback based on title length or index
+  // Hash function to get a unique index for the title
   const getFallback = () => {
-    const index = (article.title.length + article.source.length) % FALLBACK_IMAGES.length;
+    let hash = 0;
+    for (let i = 0; i < article.title.length; i++) {
+      hash = article.title.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % FALLBACK_IMAGES.length;
     return FALLBACK_IMAGES[index];
   };
 
   const currentImage = article.imageUrl || getFallback();
+
 
 
   // JSON-LD for SEO

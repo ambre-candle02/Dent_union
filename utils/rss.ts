@@ -80,7 +80,7 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
             publishedDate: item.pubDate || new Date().toISOString(),
             category: feed.category,
             imageUrl: isYouTube && videoId
-              ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` 
+              ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
               : genuineImage,
             isVideo: isYouTube && videoId !== undefined,
             videoId: videoId,
@@ -144,6 +144,8 @@ function extractImage(item: any): string | undefined {
 function extractYouTubeId(url: string): string | undefined {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : undefined;
+  const id = (match && match[2].length === 11) ? match[2] : undefined;
+  // Return undefined if not a valid ID format
+  return id;
 }
 
