@@ -12,12 +12,14 @@ interface Props {
 const NewsFeed = ({ searchQuery }: Props) => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const fetchNews = async () => {
     try {
       const res = await fetch('/api/news');
       const data = await res.json();
       setNews(data);
+      setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
       console.error(err);
     } finally {
@@ -68,7 +70,7 @@ const NewsFeed = ({ searchQuery }: Props) => {
 
       <div className={styles.divider}>
         <hr />
-        <span>Sort by: <b>Recent</b></span>
+        <span>Sort by: <b>Recent</b> • Last Updated: <b>{lastUpdated}</b></span>
       </div>
 
       {filteredNews.length > 0 ? (
