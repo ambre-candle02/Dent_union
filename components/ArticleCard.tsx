@@ -10,12 +10,16 @@ interface Props {
 
 const VERIFIED_SOURCES = ['ADA News', 'FDI World Dental', 'IDA News', 'PubMed Dentistry'];
 const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800', // Dental chair
-  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800', // Tools
-  'https://images.unsplash.com/photo-1445527815219-ecbfec67492e?auto=format&fit=crop&q=80&w=800', // Research
-  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=800', // Clinic
-  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800'  // Modern tech
+  'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=800', // Dental Chair
+  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=800', // Surgery Tools
+  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?q=80&w=800', // Professional Clinic
+  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800', // Modern X-ray lab
+  'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800', // Microscope research
+  'https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=800', // Medical lab tech
+  'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=800', // Dental implants model
+  'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800'  // Surgical lighting
 ];
+
 
 const ArticleCard = ({ article }: Props) => {
   const isVerified = VERIFIED_SOURCES.includes(article.source);
@@ -23,12 +27,14 @@ const ArticleCard = ({ article }: Props) => {
   // Hash function to get a unique index for the title
   const getFallback = () => {
     let hash = 0;
-    for (let i = 0; i < article.title.length; i++) {
-      hash = article.title.charCodeAt(i) + ((hash << 5) - hash);
+    const key = article.title + article.id; // Combined key for better randomness
+    for (let i = 0; i < key.length; i++) {
+      hash = key.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % FALLBACK_IMAGES.length;
     return FALLBACK_IMAGES[index];
   };
+
 
   const currentImage = article.imageUrl || getFallback();
 
