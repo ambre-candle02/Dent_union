@@ -63,11 +63,11 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
     if (data.status === 'success' && data.results) {
       return data.results.map((article: any) => ({
         id: article.article_id,
-        title: article.title,
-        summary: article.description || 'Dental news update from global sources.',
+        title: article.title || 'Global Dental News',
+        summary: article.description || 'Update from global dental records.',
         link: article.link,
-        source: article.source_id.toUpperCase(),
-        publishedDate: article.pubDate,
+        source: article.source_id?.toUpperCase() || 'GLOBAL NEWS',
+        publishedDate: article.pubDate || new Date().toISOString(),
         category: 'Latest Dental News',
         imageUrl: article.image_url,
         isVideo: false
@@ -79,46 +79,51 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
   return [];
 }
 
-export async function fetchAllNews(): Promise<NewsItem[]> {
-  // Parallel fetch: RSS + NewsData API
-  const rssPromises = FEEDS.map(async (feed: any) => {
-    try {
-      const parsed = await parser.parseURL(feed.url);
-      return parsed.items
-        .filter(isDentalRelated)
-        .map((item: any, index: number) => {
-          const link = item.link || item.guid || '#';
-          const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
-          const videoId = isYouTube ? extractYouTubeId(link) : undefined;
+async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
+  const apiKey = 'qmsfgi1veiedlxio3jqifg4hg2pyinvlice7geib';
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=${apiKey}&count=20`;
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status === 'ok') {
+      return data.items.map((item: any) => {
+        const link = item.link || '#';
+        const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
+        const videoId = isYouTube ? extractYouTubeId(link) : undefined;
+        
+        let summary = item.description || item.content || 'Click to read full details...';
+        summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+        if (summary.length > 250) summary = summary.substring(0, 247) + '...';
 
-          let summary = item.contentSnippet || item.contentEncoded || item.content || 'Click to read full details...';
-          summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
-          if (summary.length > 250) summary = summary.substring(0, 247) + '...';
-
-          const genuineImage = extractImage(item);
-
-          return {
-            id: item.guid || link,
-            title: item.title?.trim() || 'Dental Update',
-            summary: summary,
-            link: link,
-            source: feed.name,
-            publishedDate: item.pubDate || new Date().toISOString(),
-            category: feed.category,
-            imageUrl: isYouTube && videoId
-              ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
-              : genuineImage,
-            isVideo: isYouTube && videoId !== undefined,
-            videoId: videoId,
-          };
-        });
-    } catch (error) {
-      console.warn(`Feed Error [${feed.name}]:`, error);
-      return [];
+        return {
+          id: item.guid || link,
+          title: item.title?.trim() || 'Dental Update',
+          summary: summary,
+          link: link,
+          source: feed.name,
+          publishedDate: item.pubDate || new Date().toISOString(),
+          category: feed.category,
+          imageUrl: isYouTube && videoId
+            ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
+            : (item.thumbnail || item.enclosure?.link),
+          isVideo: isYouTube && videoId !== undefined,
+          videoId: videoId,
+        };
+      });
     }
-  });
+  } catch (err) {
+    console.error(`RSS2JSON Error [${feed.name}]:`, err);
+  }
+  return [];
+}
 
+export async function fetchAllNews(): Promise<NewsItem[]> {
+  // Parallel fetch: RSS (via API) + NewsData API
+  const rssPromises = FEEDS.map(feed => fetchFromRSS(feed));
   const apiPromise = fetchFromNewsData();
+  
   const allResults = await Promise.allSettled([...rssPromises, apiPromise]);
   
   const allItems: NewsItem[] = allResults.flatMap((result: any) => 
