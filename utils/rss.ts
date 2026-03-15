@@ -90,7 +90,7 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
     if (data.status === 'success' && data.results) {
       return data.results
         .filter(isMagazineQuality)
-        .map((article: any) => {
+        .map((article: any, i: number) => {
         let summary = article.description || article.content || 'Dental news update from global sources.';
         summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
         if (summary.length > 180) summary = summary.substring(0, 177) + '...';
@@ -103,7 +103,7 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
           source: article.source_id?.toUpperCase() || 'GLOBAL NEWS',
           publishedDate: article.pubDate || new Date().toISOString(),
           category: 'Latest Dental News',
-          imageUrl: extractImage(article) || getTopicImage(article.title),
+          imageUrl: extractImage(article) || getTopicImage(article.title, i),
           isVideo: false
         };
 
@@ -126,7 +126,7 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
     if (data.status === 'ok') {
       return data.items
         .filter(isMagazineQuality)
-        .map((item: any) => {
+        .map((item: any, i: number) => {
           const link = item.link || '#';
           const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
           const videoId = isYouTube ? extractYouTubeId(link) : undefined;
@@ -135,8 +135,9 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
           summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
           if (summary.length > 180) summary = summary.substring(0, 177) + '...';
 
-          // 🚀 Use the deep extraction OR Topic-based fallback
-          const genuineImage = extractImage(item) || getTopicImage(item.title);
+          // Use the deep extraction OR Topic-based fallback with sequential diversity
+          const genuineImage = extractImage(item) || getTopicImage(item.title, i);
+
 
           return {
             id: item.guid || link,
@@ -175,7 +176,7 @@ async function fetchFromGNews(): Promise<NewsItem[]> {
     
     if (data.articles) {
       return data.articles
-        .map((article: any) => {
+        .map((article: any, i: number) => {
           let summary = article.description || article.content || 'Clinical update from GNews research network.';
           summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
           if (summary.length > 180) summary = summary.substring(0, 177) + '...';
@@ -188,7 +189,7 @@ async function fetchFromGNews(): Promise<NewsItem[]> {
             source: article.source.name.toUpperCase() + ' (INDIA)',
             publishedDate: article.publishedAt,
             category: 'Indian Dental News',
-            imageUrl: extractImage(article) || getTopicImage(article.title),
+            imageUrl: extractImage(article) || getTopicImage(article.title, i),
             isVideo: false
           };
 
@@ -228,20 +229,46 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
   return uniqueItems.sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()).slice(0, 50);
 }
 
-// 🚀 DentUnion Topic-Based Fallback System
-function getTopicImage(title: string): string {
+// 🚀 DentUnion Topic-Based Fallback System (With Diversity logic)
+const TOPIC_GALLERY: Record<string, string[]> = {
+  implant: [
+    'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=800',
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800',
+    'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800'
+  ],
+  ortho: [
+    'https://images.unsplash.com/photo-1625515845397-30176028549d?q=80&w=800',
+    'https://images.unsplash.com/photo-1612117502667-db0995fa6668?q=80&w=800'
+  ],
+  surgery: [
+    'https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=800',
+    'https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800'
+  ],
+  research: [
+    'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800',
+    'https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=800',
+    'https://images.unsplash.com/photo-1445527815219-ecbfec67492e?q=80&w=800'
+  ],
+  default: [
+    'https://images.unsplash.com/photo-1588776813677-77aaf558ff52?q=80&w=800',
+    'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?q=80&w=800',
+    'https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800'
+  ]
+};
+
+function getTopicImage(title: string, index: number = 0): string {
   const t = title.toLowerCase();
+  let key = 'default';
   
-  if (t.includes('implant')) return 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=800'; // Implant model
-  if (t.includes('ortho') || t.includes('braces') || t.includes('align')) return 'https://images.unsplash.com/photo-1625515845397-30176028549d?q=80&w=800'; // Orthodontic
-  if (t.includes('surgery') || t.includes('maxillofacial')) return 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800'; // Surgery
-  if (t.includes('tech') || t.includes('digital') || t.includes('ai')) return 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800'; // Modern Tech
-  if (t.includes('research') || t.includes('journal') || t.includes('study')) return 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800'; // Lab Research
-  if (t.includes('periodontic') || t.includes('gum') || t.includes('gingival')) return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=800'; // Clinical care
-  if (t.includes('endo') || t.includes('root canal')) return 'https://images.unsplash.com/photo-1612117502667-db0995fa6668?q=80&w=800'; // Endo/Canal
-  
-  return 'https://images.unsplash.com/photo-1588776813677-77aaf558ff52?q=80&w=800'; // Default High-Quality Clinic
+  if (t.includes('implant')) key = 'implant';
+  else if (t.includes('ortho') || t.includes('braces')) key = 'ortho';
+  else if (t.includes('surgery')) key = 'surgery';
+  else if (t.includes('research') || t.includes('journal')) key = 'research';
+
+  const images = TOPIC_GALLERY[key];
+  return images[index % images.length];
 }
+
 
 function extractImage(item: any): string | undefined {
   // 1. Direct from API fields
