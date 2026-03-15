@@ -16,6 +16,7 @@ export interface NewsItem {
 const parser = new Parser();
 
 const FEEDS = [
+  { name: 'India Dental News', url: 'https://news.google.com/rss/search?q=dentistry+news+india&hl=en-IN&gl=IN&ceid=IN:en' },
   { name: 'ADA TV (Video)', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UC3UBF_16dd2UncCoR0lCgKQ' },
   { name: 'Dentaltown News (Video)', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCxpTLZhizevXl-vQ6ODEd0A' },
   { name: 'ScienceDaily Dentistry', url: 'https://www.sciencedaily.com/rss/health_medicine/dentistry.xml' },
