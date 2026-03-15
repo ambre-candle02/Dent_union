@@ -35,14 +35,6 @@ const DENTAL_KEYWORDS = [
   'stomatology', 'orthodontic', 'endodontic', 'surgeon', 'clinical'
 ];
 
-const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1445527815219-ecbfec67492e?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800'
-];
-
 const FEEDS = [
   { name: 'ADA News', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Latest Dental News' },
   { name: 'FDI World Dental', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Global Dentistry' },
@@ -55,6 +47,8 @@ const FEEDS = [
 ];
 
 function isDentalRelated(item: any): boolean {
+
+  // Check title, summary and encoded content for keywords
   const content = `${item.title} ${item.contentSnippet || item.content || item.contentEncoded || ''}`.toLowerCase();
   return DENTAL_KEYWORDS.some(keyword => content.includes(keyword));
 }
@@ -71,8 +65,11 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
           const videoId = isYouTube ? extractYouTubeId(link) : undefined;
 
           let summary = item.contentSnippet || item.contentEncoded || item.content || 'Click to read full details...';
+          // Remove HTML tags thoroughly
           summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
           if (summary.length > 250) summary = summary.substring(0, 247) + '...';
+
+          const genuineImage = extractImage(item);
 
           return {
             id: item.guid || link,
@@ -84,7 +81,7 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
             category: feed.category,
             imageUrl: isYouTube && videoId
               ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` 
-              : extractImage(item) || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
+              : genuineImage,
             isVideo: isYouTube && videoId !== undefined,
             videoId: videoId,
           };
@@ -99,7 +96,6 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
   const allItems: NewsItem[] = results.flatMap((result: any) => 
     result.status === 'fulfilled' ? result.value : []
   );
-
 
   const seenLinks = new Set<string>();
   const seenTitles = new Set<string>();
@@ -117,19 +113,31 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
 }
 
 function extractImage(item: any): string | undefined {
+  // 1. Direct Enclosure
   if (item.enclosure && item.enclosure.url) return item.enclosure.url;
   
-  const content = (item.content || '') + (item.contentEncoded || '') + (item.contentSnippet || '');
-  const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
-  if (imgMatch) return imgMatch[1];
-
+  // 2. Media Content (Standard RSS Media)
   if (item.mediaContent) {
     if (Array.isArray(item.mediaContent)) return item.mediaContent[0]?.$?.url;
     return item.mediaContent?.$?.url;
   }
 
+  // 3. Media Group (Used by YouTube and some news feeds)
+  if (item.mediaGroup && item.mediaGroup['media:thumbnail']) {
+    const thumbs = item.mediaGroup['media:thumbnail'];
+    return Array.isArray(thumbs) ? thumbs[0]?.$?.url : thumbs?.$?.url;
+  }
+
+  // 4. Scrape from content:encoded or common summary
+  const content = (item.contentEncoded || '') + (item.content || '') + (item.contentSnippet || '');
+  const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+  if (imgMatch && imgMatch[1] && !imgMatch[1].includes('feedburner')) {
+    return imgMatch[1];
+  }
+
   return undefined;
 }
+
 
 
 
