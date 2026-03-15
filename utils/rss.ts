@@ -32,8 +32,10 @@ const parser = new Parser({
 const DENTAL_MAGAZINE_KEYWORDS = [
   'clinical', 'research', 'journal', 'study', 'technology', 'treatment', 'implantology', 
   'pathology', 'radiology', 'surgery', 'orthodontics', 'periodontics', 'restorative', 
-  'biotech', 'case report', 'evidence-based', 'guidelines', 'fda', 'famdent', 'jcd', 'ijdr'
+  'biotech', 'case report', 'evidence-based', 'guidelines', 'fda', 'famdent', 'jcd', 'ijdr',
+  'expert opinion', 'interview', 'professor', 'scholar', 'keynote', 'statement', 'perspective'
 ];
+
 
 
 const FEEDS = [
@@ -61,8 +63,9 @@ function isMagazineQuality(item: any): boolean {
 
 async function fetchFromNewsData(): Promise<NewsItem[]> {
   const apiKey = 'pub_11ccc59aed8b4c58bdd89cd6d8286e2f';
-  // Focused on top Indian Magazines & Journals
-  const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=(Famdent+OR+IJDR+OR+JCD+OR+"Indian+Journal+of+Dental+Research")+AND+dentistry&language=en`;
+  // Focused on top Indian Magazines & Expert Scholar Statements
+  const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=(Famdent+OR+IJDR+OR+JCD+OR+"Expert+Opinion"+OR+"Interview")+AND+dentistry&language=en`;
+
 
   
   try {
@@ -141,8 +144,9 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
 
 async function fetchFromGNews(): Promise<NewsItem[]> {
   const apiKey = '33b834bdb3196ebaa8ec9941b32a07ac';
-  // Target: Indian Dental Magazines + Peer Reviewed Content
-  const url = `https://gnews.io/api/v4/search?q=("Famdent"+OR+"Dental+Practice+South+Asia"+OR+"IJDR")+AND+dentistry&lang=en&max=10&apikey=${apiKey}`;
+  // Target: Scholars, Professor Interviews and Clinical Perspective
+  const url = `https://gnews.io/api/v4/search?q=("Expert+Opinion"+OR+"Interview"+OR+"Professor")+AND+dentistry&lang=en&max=10&apikey=${apiKey}`;
+
 
   
   try {
