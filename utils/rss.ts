@@ -70,9 +70,11 @@ const FEEDS = [
   { name: 'ADA Conferences', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Events' },
 
   // 🇮🇳 Indian Professional Focus
+  { name: 'Dental Practice South Asia', url: 'https://news.google.com/rss/search?q=site:dental-practice.biz&hl=en-IN&gl=IN&ceid=IN:en', category: 'Indian Dental News' },
   { name: 'IDA Official (India)', url: 'https://ida.org.in/feed', category: 'Indian Dental News' },
   { name: 'Indian Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Indian+Journal+of+Dental+Research', category: 'Indian Dental News' },
 ];
+
 
 
 
