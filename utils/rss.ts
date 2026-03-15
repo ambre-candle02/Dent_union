@@ -36,14 +36,19 @@ const DENTAL_MAGAZINE_KEYWORDS = [
 ];
 
 const FEEDS = [
+  // International Magazines & Journals
   { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Research Updates' },
   { name: 'Dentistry Today Magazine', url: 'https://www.dentistrytoday.com/feed/', category: 'Latest Dental News' },
   { name: 'JADA Clinical Highlights', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/', category: 'Research Updates' },
-  { name: 'Dental Tribune Online', url: 'https://www.dental-tribune.com/feed/', category: 'Global Dentistry' },
   { name: 'FDI Clinical Research', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Global Dentistry' },
-  { name: 'Journal of Clinical Dentistry', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+dentistry+case+reports', category: 'Clinical Cases' },
-  { name: 'Dentistry.co.uk', url: 'https://dentistry.co.uk/feed/', category: 'Latest Dental News' },
+  
+  // Indian Clinical & Association Feeds
+  { name: 'IDA News (Official India)', url: 'https://ida.org.in/feed', category: 'Indian Dental News' },
+  { name: 'India Clinical Dentistry Search', url: 'https://news.google.com/rss/search?q=clinical+dentistry+india&hl=en-IN&gl=IN&ceid=IN:en', category: 'Indian Dental News' },
+  { name: 'Indian Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Indian+Journal+of+Dental+Research', category: 'Research Updates' },
+  { name: 'NDTV Dental Health India', url: 'https://feeds.feedburner.com/ndtvhealth-latest', category: 'Indian Dental News' },
 ];
+
 
 function isMagazineQuality(item: any): boolean {
   const content = `${item.title} ${item.description || item.content || ''}`.toLowerCase();
@@ -133,7 +138,8 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
 
 async function fetchFromGNews(): Promise<NewsItem[]> {
   const apiKey = '33b834bdb3196ebaa8ec9941b32a07ac';
-  const url = `https://gnews.io/api/v4/search?q="clinical+dentistry"+OR+"dental+research"+OR+journal&lang=en&max=10&apikey=${apiKey}`;
+  // Hybrid search: International Clinical + Indian Dental News
+  const url = `https://gnews.io/api/v4/search?q=("clinical+dentistry"+AND+India)+OR+("dental+research"+AND+India)&lang=en&max=10&apikey=${apiKey}`;
   
   try {
     const response = await fetch(url);
@@ -141,24 +147,23 @@ async function fetchFromGNews(): Promise<NewsItem[]> {
     
     if (data.articles) {
       return data.articles
-        .filter(isMagazineQuality)
         .map((article: any) => {
-        let summary = article.description || article.content || 'Clinical update from GNews research network.';
-        summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
-        if (summary.length > 180) summary = summary.substring(0, 177) + '...';
+          let summary = article.description || article.content || 'Clinical update from GNews research network.';
+          summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+          if (summary.length > 180) summary = summary.substring(0, 177) + '...';
 
-        return {
-          id: article.url,
-          title: article.title,
-          summary: summary,
-          link: article.url,
-          source: article.source.name.toUpperCase(),
-          publishedDate: article.publishedAt,
-          category: 'Research Updates',
-          imageUrl: article.image,
-          isVideo: false
-        };
-      });
+          return {
+            id: article.url,
+            title: article.title,
+            summary: summary,
+            link: article.url,
+            source: article.source.name.toUpperCase() + ' (INDIA)',
+            publishedDate: article.publishedAt,
+            category: 'Indian Dental News',
+            imageUrl: article.image,
+            isVideo: false
+          };
+        });
     }
   } catch (err) {
     console.error('GNews API Error:', err);
