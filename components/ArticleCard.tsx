@@ -17,8 +17,23 @@ const FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800', // Microscope research
   'https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=800', // Medical lab tech
   'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=800', // Dental implants model
-  'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800'  // Surgical lighting
+  'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800', // Surgical lighting
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=800', // Patient care
+  'https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=800', // Laboratory research
+  'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?q=80&w=800', // Clinical setting
+  'https://images.unsplash.com/photo-1445527815219-ecbfec67492e?q=80&w=800', // Scientific documentation
+  'https://images.unsplash.com/photo-1571772996211-1f99c8bf6f80?q=80&w=800', // Tooth modeling
+  'https://images.unsplash.com/photo-1576091160550-217359f49f4c?q=80&w=800', // Oral hygiene check 
+  'https://images.unsplash.com/photo-1460676746863-95587f719539?q=80&w=800', // Pro sterilization
+  'https://images.unsplash.com/photo-1625515845397-30176028549d?q=80&w=800', // Orthodontic work
+  'https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800', // Sterile environment
+  'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?q=80&w=800', // Scanning teeth
+  'https://images.unsplash.com/photo-1571771410320-48b6f28b3e51?q=80&w=800', // Modern dentistry
+  'https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800', // Equipment close-up
+  'https://images.unsplash.com/photo-1612117502667-db0995fa6668?q=80&w=800', // Precise treatment
+  'https://images.unsplash.com/photo-1588776813677-77aaf558ff52?q=80&w=800'  // Expert clinic
 ];
+
 
 
 const ArticleCard = ({ article }: Props) => {
@@ -26,14 +41,15 @@ const ArticleCard = ({ article }: Props) => {
   
   // Hash function to get a unique index for the title
   const getFallback = () => {
-    let hash = 0;
-    const key = article.title + article.id; // Combined key for better randomness
+    let hash = 5381; // Higher initial entropy
+    const key = article.title + (article.id || article.link);
     for (let i = 0; i < key.length; i++) {
-      hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      hash = ((hash << 5) + hash) + key.charCodeAt(i);
     }
     const index = Math.abs(hash) % FALLBACK_IMAGES.length;
     return FALLBACK_IMAGES[index];
   };
+
 
 
   const currentImage = article.imageUrl || getFallback();
