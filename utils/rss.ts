@@ -54,9 +54,11 @@ const FEEDS = [
   { name: 'Dentistry Today', url: 'https://www.dentistrytoday.com/feed/', category: 'Dental Journals' },
   
   // 🔬 Clinical Research & Advances
+  { name: 'exocad Digital Workflows', url: 'https://news.google.com/rss/search?q=site:exocad.com/exoblog&hl=en-US&gl=US&ceid=US:en', category: 'Clinical Research' },
   { name: 'PubMed: Clinical Dentistry', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+dentistry+case+reports', category: 'Clinical Research' },
   { name: 'ADA Research News', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Clinical Research' },
   { name: 'International Association for Dental Research', url: 'https://www.iadr.org/RSS.xml', category: 'Clinical Research' },
+
   
   // 🎓 Education & Resources
   { name: 'NIDCR: Dental Education', url: 'https://www.nidcr.nih.gov/news-events/rss', category: 'Education' },
