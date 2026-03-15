@@ -126,12 +126,46 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
 }
 
 
-export async function fetchAllNews(): Promise<NewsItem[]> {
-  // Parallel fetch: RSS (via API) + NewsData API
-  const rssPromises = FEEDS.map(feed => fetchFromRSS(feed));
-  const apiPromise = fetchFromNewsData();
+async function fetchFromGNews(): Promise<NewsItem[]> {
+  const apiKey = '33b834bdb3196ebaa8ec9941b32a07ac';
+  const url = `https://gnews.io/api/v4/search?q=dentistry%20OR%20"dental%20clinical"&lang=en&max=10&apikey=${apiKey}`;
   
-  const allResults = await Promise.allSettled([...rssPromises, apiPromise]);
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.articles) {
+      return data.articles.map((article: any) => {
+        let summary = article.description || article.content || 'Clinical update from GNews research network.';
+        summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+        if (summary.length > 180) summary = summary.substring(0, 177) + '...';
+
+        return {
+          id: article.url,
+          title: article.title,
+          summary: summary,
+          link: article.url,
+          source: article.source.name.toUpperCase(),
+          publishedDate: article.publishedAt,
+          category: 'Research Updates',
+          imageUrl: article.image,
+          isVideo: false
+        };
+      });
+    }
+  } catch (err) {
+    console.error('GNews API Error:', err);
+  }
+  return [];
+}
+
+export async function fetchAllNews(): Promise<NewsItem[]> {
+  // Parallel fetch: RSS (via API) + NewsData API + GNews API
+  const rssPromises = FEEDS.map(feed => fetchFromRSS(feed));
+  const newsDataPromise = fetchFromNewsData();
+  const gNewsPromise = fetchFromGNews();
+  
+  const allResults = await Promise.allSettled([...rssPromises, newsDataPromise, gNewsPromise]);
   
   const allItems: NewsItem[] = allResults.flatMap((result: any) => 
     result.status === 'fulfilled' ? result.value : []
