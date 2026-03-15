@@ -103,9 +103,10 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
           source: article.source_id?.toUpperCase() || 'GLOBAL NEWS',
           publishedDate: article.pubDate || new Date().toISOString(),
           category: 'Latest Dental News',
-          imageUrl: article.image_url,
+          imageUrl: extractImage(article) || getTopicImage(article.title),
           isVideo: false
         };
+
       });
     }
   } catch (err) {
@@ -134,8 +135,8 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
           summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
           if (summary.length > 180) summary = summary.substring(0, 177) + '...';
 
-          // Use the deep extraction function to find the real image
-          const genuineImage = extractImage(item) || item.thumbnail || item.enclosure?.link;
+          // 🚀 Use the deep extraction OR Topic-based fallback
+          const genuineImage = extractImage(item) || getTopicImage(item.title);
 
           return {
             id: item.guid || link,
@@ -153,12 +154,12 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
           };
         });
     }
-
   } catch (err) {
     console.error(`RSS2JSON Error [${feed.name}]:`, err);
   }
   return [];
 }
+
 
 
 async function fetchFromGNews(): Promise<NewsItem[]> {
@@ -187,9 +188,10 @@ async function fetchFromGNews(): Promise<NewsItem[]> {
             source: article.source.name.toUpperCase() + ' (INDIA)',
             publishedDate: article.publishedAt,
             category: 'Indian Dental News',
-            imageUrl: article.image,
+            imageUrl: extractImage(article) || getTopicImage(article.title),
             isVideo: false
           };
+
         });
     }
   } catch (err) {
@@ -226,24 +228,38 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
   return uniqueItems.sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()).slice(0, 50);
 }
 
+// 🚀 DentUnion Topic-Based Fallback System
+function getTopicImage(title: string): string {
+  const t = title.toLowerCase();
+  
+  if (t.includes('implant')) return 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=800'; // Implant model
+  if (t.includes('ortho') || t.includes('braces') || t.includes('align')) return 'https://images.unsplash.com/photo-1625515845397-30176028549d?q=80&w=800'; // Orthodontic
+  if (t.includes('surgery') || t.includes('maxillofacial')) return 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=800'; // Surgery
+  if (t.includes('tech') || t.includes('digital') || t.includes('ai')) return 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800'; // Modern Tech
+  if (t.includes('research') || t.includes('journal') || t.includes('study')) return 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800'; // Lab Research
+  if (t.includes('periodontic') || t.includes('gum') || t.includes('gingival')) return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=800'; // Clinical care
+  if (t.includes('endo') || t.includes('root canal')) return 'https://images.unsplash.com/photo-1612117502667-db0995fa6668?q=80&w=800'; // Endo/Canal
+  
+  return 'https://images.unsplash.com/photo-1588776813677-77aaf558ff52?q=80&w=800'; // Default High-Quality Clinic
+}
+
 function extractImage(item: any): string | undefined {
-  // 1. Direct Enclosure
+  // 1. Direct from API fields
+  if (item.image && item.image !== "") return item.image;
+  if (item.urlToImage && item.urlToImage !== "") return item.urlToImage;
+  if (item.image_url && item.image_url !== "") return item.image_url;
+
+  // 2. RSS Enclosure
   if (item.enclosure && item.enclosure.url) return item.enclosure.url;
   
-  // 2. Media Content (Standard RSS Media)
+  // 3. Media Content
   if (item.mediaContent) {
     if (Array.isArray(item.mediaContent)) return item.mediaContent[0]?.$?.url;
     return item.mediaContent?.$?.url;
   }
 
-  // 3. Media Group (Used by YouTube and some news feeds)
-  if (item.mediaGroup && item.mediaGroup['media:thumbnail']) {
-    const thumbs = item.mediaGroup['media:thumbnail'];
-    return Array.isArray(thumbs) ? thumbs[0]?.$?.url : thumbs?.$?.url;
-  }
-
-  // 4. Scrape from content:encoded or common summary
-  const content = (item.contentEncoded || '') + (item.content || '') + (item.contentSnippet || '');
+  // 4. Scrape from content
+  const content = (item.contentEncoded || '') + (item.description || '') + (item.contentSnippet || '');
   const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
   if (imgMatch && imgMatch[1] && !imgMatch[1].includes('feedburner')) {
     return imgMatch[1];
@@ -251,6 +267,7 @@ function extractImage(item: any): string | undefined {
 
   return undefined;
 }
+
 
 
 
