@@ -1,13 +1,12 @@
 # DentUnion API & Source Configuration
 
-Note: For the current MVP Phase 1, we are using Open RSS Feeds which DO NOT require a private API Key. This allows the platform to run for free with real-time updates.
+## Active Professional Keys (Phase 1+):
+- **NewsData.io API Key**: `pub_11ccc59aed8b4c58bdd89cd6d8286e2f` (Used for global dental trends)
+- **RSS2JSON API Key**: `qmsfgi1veiedlxio3jqifg4hg2pyinvlice7geib` (Used for official RSS feeds speed/conversion)
 
-## Current Active Sources (No Key Required):
-- ScienceDaily Dentistry: https://www.sciencedaily.com/rss/health_medicine/dentistry.xml
-- ADA TV (YouTube RSS): https://www.youtube.com/feeds/videos.xml?channel_id=UC3UBF_16dd2UncCoR0lCgKQ
-- Dentaltown News (YouTube RSS): https://www.youtube.com/feeds/videos.xml?channel_id=UCxpTLZhizevXl-vQ6ODEd0A
-- Google Dental News: news.google.com
+## Central Config Location:
+Keys are also stored in `/config/keys.json` for easy management.
 
-## Future Phase 2 Keys (Placeholder):
-NEXT_PUBLIC_OPENAI_API_KEY=your_key_here_for_advanced_ai_summaries
-NEXT_PUBLIC_NEWS_API_KEY=your_key_here_for_premium_news_api
+## Integration:
+The system uses a hybrid engine in `utils/rss.ts` to combine raw RSS feeds with professional News APIs for 100% uptime and authenticity.
+

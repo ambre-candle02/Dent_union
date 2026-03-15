@@ -1,0 +1,5 @@
+{
+  "NEWSDATA_API_KEY": "pub_11ccc59aed8b4c58bdd89cd6d8286e2f",
+  "RSS2JSON_API_KEY": "qmsfgi1veiedlxio3jqifg4hg2pyinvlice7geib",
+  "INSTRUCTIONS": "These keys are used in utils/rss.ts for fetching professional dental news from NewsData.io and RSS2JSON services."
+}
