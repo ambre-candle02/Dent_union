@@ -30,11 +30,17 @@ const parser = new Parser({
 });
 
 const DENTAL_MAGAZINE_KEYWORDS = [
-  'clinical', 'research', 'journal', 'study', 'technology', 'treatment', 'implantology', 
-  'pathology', 'radiology', 'surgery', 'orthodontics', 'periodontics', 'restorative', 
-  'biotech', 'case report', 'evidence-based', 'guidelines', 'fda', 'famdent', 'jcd', 'ijdr',
-  'expert opinion', 'interview', 'professor', 'scholar', 'keynote', 'statement', 'perspective'
+  'dentist', 'dental', 'implantology', 'orthodontics', 'periodontics', 'endodontics', 
+  'oral surgery', 'prosthodontics', 'restorative dentistry', 'pedodontics', 'radiology',
+  'stomatology', 'root canal', 'maxillofacial', 'clinical dentistry', 'dental research',
+  'pathology', 'gingival', 'denture', 'famdent', 'jcd', 'ijdr', 'clinical case'
 ];
+
+const BANNED_KEYWORDS = [
+  'loan', 'insurance', 'marketing', 'stocks', 'price', 'dividend', 'opening ceremony', 
+  'student', 'salary', 'recruitment', 'appointment', 'generic news', 'weather'
+];
+
 
 
 
@@ -54,10 +60,19 @@ const FEEDS = [
 
 
 function isMagazineQuality(item: any): boolean {
-  const content = `${item.title} ${item.description || item.content || ''}`.toLowerCase();
-  // Filter for high-impact professional keywords
-  return DENTAL_MAGAZINE_KEYWORDS.some(keyword => content.includes(keyword));
+  const title = (item.title || '').toLowerCase();
+  const desc = (item.description || item.content || '').toLowerCase();
+  const content = `${title} ${desc}`;
+  
+  // 1. Must have at least one Dentist-Specific keyword
+  const isDental = DENTAL_MAGAZINE_KEYWORDS.some(k => content.includes(k));
+  
+  // 2. Must NOT have any Banned/Junk keywords
+  const isJunk = BANNED_KEYWORDS.some(k => content.includes(k));
+  
+  return isDental && !isJunk;
 }
+
 
 
 
