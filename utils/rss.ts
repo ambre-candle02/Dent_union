@@ -29,39 +29,42 @@ const parser = new Parser({
   },
 });
 
-const DENTAL_KEYWORDS = [
-  'dental', 'dentist', 'dentistry', 'tooth', 'teeth', 'implant', 'ortho', 'periodontal', 
-  'clinic', 'oral', 'cavity', 'molar', 'gingival', 'denture', 'root canal', 'maxillofacial',
-  'stomatology', 'orthodontic', 'endodontic', 'surgeon', 'clinical'
+const DENTAL_MAGAZINE_KEYWORDS = [
+  'clinical', 'research', 'journal', 'study', 'technology', 'treatment', 'implantology', 
+  'pathology', 'radiology', 'surgery', 'orthodontics', 'periodontics', 'restorative', 
+  'biotech', 'case report', 'evidence-based', 'guidelines', 'fda'
 ];
 
 const FEEDS = [
-  { name: 'ADA News', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Latest Dental News' },
-  { name: 'FDI World Dental', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Global Dentistry' },
-  { name: 'IDA News', url: 'https://ida.org.in/feed', category: 'Indian Dental News' },
-  { name: 'PubMed Dentistry', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=dentistry', category: 'Research Updates' },
-  { name: 'Dental Tribune', url: 'https://www.dental-tribune.com/feed/', category: 'Global Dentistry' },
-  { name: 'Medical Xpress Dentistry', url: 'https://medicalxpress.com/rss-feed/dentistry-news/', category: 'Research Updates' },
-  { name: 'India Dental News', url: 'https://news.google.com/rss/search?q=dentistry+news+india&hl=en-IN&gl=IN&ceid=IN:en', category: 'Indian Dental News' },
-  { name: 'ADA TV (Video)', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UC3UBF_16dd2UncCoR0lCgKQ', category: 'Clinical Cases' },
+  { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Research Updates' },
+  { name: 'Dentistry Today Magazine', url: 'https://www.dentistrytoday.com/feed/', category: 'Latest Dental News' },
+  { name: 'JADA Clinical Highlights', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/', category: 'Research Updates' },
+  { name: 'Dental Tribune Online', url: 'https://www.dental-tribune.com/feed/', category: 'Global Dentistry' },
+  { name: 'FDI Clinical Research', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Global Dentistry' },
+  { name: 'Journal of Clinical Dentistry', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+dentistry+case+reports', category: 'Clinical Cases' },
+  { name: 'Dentistry.co.uk', url: 'https://dentistry.co.uk/feed/', category: 'Latest Dental News' },
 ];
 
-function isDentalRelated(item: any): boolean {
-  // Relaxed: Trusting FEEDS sources as they are already dental-specific.
-  return true;
+function isMagazineQuality(item: any): boolean {
+  const content = `${item.title} ${item.description || item.content || ''}`.toLowerCase();
+  // Filter for high-impact professional keywords
+  return DENTAL_MAGAZINE_KEYWORDS.some(keyword => content.includes(keyword));
 }
+
 
 
 async function fetchFromNewsData(): Promise<NewsItem[]> {
   const apiKey = 'pub_11ccc59aed8b4c58bdd89cd6d8286e2f';
-  const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=dentistry%20OR%20"dental%20care"%20OR%20"oral%20health"&language=en`;
+  const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=clinical%20dentistry%20OR%20"dental%20research"%20OR%20"oral%20pathology"&language=en`;
   
   try {
     const response = await fetch(url);
     const data = await response.json();
     
     if (data.status === 'success' && data.results) {
-      return data.results.map((article: any) => {
+      return data.results
+        .filter(isMagazineQuality)
+        .map((article: any) => {
         let summary = article.description || article.content || 'Dental news update from global sources.';
         summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
         if (summary.length > 180) summary = summary.substring(0, 177) + '...';
@@ -94,7 +97,9 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
     const data = await response.json();
     
     if (data.status === 'ok') {
-      return data.items.map((item: any) => {
+      return data.items
+        .filter(isMagazineQuality)
+        .map((item: any) => {
         const link = item.link || '#';
         const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
         const videoId = isYouTube ? extractYouTubeId(link) : undefined;
@@ -128,14 +133,16 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
 
 async function fetchFromGNews(): Promise<NewsItem[]> {
   const apiKey = '33b834bdb3196ebaa8ec9941b32a07ac';
-  const url = `https://gnews.io/api/v4/search?q=dentistry%20OR%20"dental%20clinical"&lang=en&max=10&apikey=${apiKey}`;
+  const url = `https://gnews.io/api/v4/search?q="clinical+dentistry"+OR+"dental+research"+OR+journal&lang=en&max=10&apikey=${apiKey}`;
   
   try {
     const response = await fetch(url);
     const data = await response.json();
     
     if (data.articles) {
-      return data.articles.map((article: any) => {
+      return data.articles
+        .filter(isMagazineQuality)
+        .map((article: any) => {
         let summary = article.description || article.content || 'Clinical update from GNews research network.';
         summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
         if (summary.length > 180) summary = summary.substring(0, 177) + '...';
