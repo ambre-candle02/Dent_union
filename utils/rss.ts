@@ -126,30 +126,34 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
       return data.items
         .filter(isMagazineQuality)
         .map((item: any) => {
-        const link = item.link || '#';
-        const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
-        const videoId = isYouTube ? extractYouTubeId(link) : undefined;
-        
-        let summary = item.description || item.content || 'Click to read full details...';
-        summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
-        if (summary.length > 180) summary = summary.substring(0, 177) + '...';
+          const link = item.link || '#';
+          const isYouTube = link.includes('youtube.com') || link.includes('youtu.be') || feed.url.includes('youtube.com');
+          const videoId = isYouTube ? extractYouTubeId(link) : undefined;
+          
+          let summary = item.description || item.content || 'Click to read full details...';
+          summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+          if (summary.length > 180) summary = summary.substring(0, 177) + '...';
 
-        return {
-          id: item.guid || link,
-          title: item.title?.trim() || 'Dental Update',
-          summary: summary,
-          link: link,
-          source: feed.name,
-          publishedDate: item.pubDate || new Date().toISOString(),
-          category: feed.category,
-          imageUrl: isYouTube && videoId
-            ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
-            : (item.thumbnail || item.enclosure?.link),
-          isVideo: isYouTube && videoId !== undefined,
-          videoId: videoId,
-        };
-      });
+          // Use the deep extraction function to find the real image
+          const genuineImage = extractImage(item) || item.thumbnail || item.enclosure?.link;
+
+          return {
+            id: item.guid || link,
+            title: item.title?.trim() || 'Dental Update',
+            summary: summary,
+            link: link,
+            source: feed.name,
+            publishedDate: item.pubDate || new Date().toISOString(),
+            category: feed.category,
+            imageUrl: isYouTube && videoId
+              ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
+              : genuineImage,
+            isVideo: isYouTube && videoId !== undefined,
+            videoId: videoId,
+          };
+        });
     }
+
   } catch (err) {
     console.error(`RSS2JSON Error [${feed.name}]:`, err);
   }
