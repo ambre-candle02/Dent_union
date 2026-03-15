@@ -13,7 +13,9 @@ export interface NewsItem {
   videoId?: string;
 }
 
-const parser = new Parser();
+const parser = new Parser({
+  timeout: 5000, // 5 second timeout per feed
+});
 
 const FEEDS = [
   { name: 'India Dental News', url: 'https://news.google.com/rss/search?q=dentistry+news+india&hl=en-IN&gl=IN&ceid=IN:en' },
@@ -24,13 +26,10 @@ const FEEDS = [
 ];
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
-  const allItems: NewsItem[] = [];
-
-  for (const feed of FEEDS) {
+  const feedPromises = FEEDS.map(async (feed) => {
     try {
       const parsed = await parser.parseURL(feed.url);
-      
-      const items = parsed.items.map((item, index) => {
+      return parsed.items.map((item, index) => {
         const link = item.link || '#';
         const isYouTube = link.includes('youtube.com') || link.includes('youtu.be');
         const videoId = isYouTube ? extractYouTubeId(link) : undefined;
@@ -48,12 +47,16 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
           videoId: videoId,
         };
       });
-
-      allItems.push(...items);
     } catch (error) {
       console.error(`Error fetching feed ${feed.name}:`, error);
+      return [];
     }
-  }
+  });
+
+  const results = await Promise.allSettled(feedPromises);
+  const allItems: NewsItem[] = results.flatMap(result => 
+    result.status === 'fulfilled' ? result.value : []
+  );
 
   // Fallback Mock Data if no feeds work
   if (allItems.length === 0) {
