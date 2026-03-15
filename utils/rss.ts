@@ -47,11 +47,10 @@ const FEEDS = [
 ];
 
 function isDentalRelated(item: any): boolean {
-
-  // Check title, summary and encoded content for keywords
-  const content = `${item.title} ${item.contentSnippet || item.content || item.contentEncoded || ''}`.toLowerCase();
-  return DENTAL_KEYWORDS.some(keyword => content.includes(keyword));
+  // Relaxed: Trusting FEEDS sources as they are already dental-specific.
+  return true;
 }
+
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
   const feedPromises = FEEDS.map(async (feed: any) => {
