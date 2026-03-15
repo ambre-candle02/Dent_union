@@ -28,7 +28,21 @@
 .sourceName {
   font-size: 14px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.categoryBadge {
+  background: var(--light-teal);
+  color: var(--primary);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 
 .statusRow {
   display: flex;
@@ -106,37 +120,81 @@
   color: var(--primary);
 }
 
+.sourceNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verifiedBadge {
+  background: var(--primary);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.titleLink {
+  text-decoration: none;
+}
+
+.titleLink:hover .title {
+  text-decoration: underline;
+}
+
+.aiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.aiConfidence {
+  font-size: 10px;
+  color: var(--secondary);
+  font-weight: 800;
+  background: rgba(0, 150, 136, 0.1);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
 .footer {
-  padding: 12px 16px;
+  padding: 8px 16px;
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.readMore {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--secondary);
-}
-
-.actions {
-  display: flex;
-  gap: 16px;
-}
-
-.actions button {
+.actionBtn {
   background: none;
   border: none;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 8px 12px;
   border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-.actions button:hover {
+.actionBtn:hover {
   background: var(--background);
   color: var(--primary);
 }
+
+.readMore {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--secondary);
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+

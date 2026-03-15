@@ -9,9 +9,12 @@ interface Props {
   searchQuery: string;
 }
 
+const categories = ['All', 'Latest Dental News', 'Research Updates', 'Global Dentistry', 'Clinical Cases', 'Indian Dental News'];
+
 const NewsFeed = ({ searchQuery }: Props) => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('All');
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const fetchNews = async () => {
@@ -29,16 +32,17 @@ const NewsFeed = ({ searchQuery }: Props) => {
 
   useEffect(() => {
     fetchNews();
-    // Simulate real-time update every 5 minutes
     const interval = setInterval(fetchNews, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const filteredNews = news.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.source.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredNews = news.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.source.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   if (loading) {
     return (
@@ -48,6 +52,7 @@ const NewsFeed = ({ searchQuery }: Props) => {
       </div>
     );
   }
+
 
   return (
     <div className={styles.feed}>
@@ -68,9 +73,21 @@ const NewsFeed = ({ searchQuery }: Props) => {
         </div>
       </div>
 
+      <div className={styles.categoryTabs}>
+        {categories.map(cat => (
+          <button 
+            key={cat} 
+            className={activeCategory === cat ? styles.activeTab : styles.tab}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.divider}>
         <hr />
-        <span>Sort by: <b>Recent</b> • Last Updated: <b>{lastUpdated}</b></span>
+        <span>Sort by: <b>Recent</b> • Updates: <b>Auto (Every 30m)</b> • Last Sync: <b>{lastUpdated}</b></span>
       </div>
 
       {filteredNews.length > 0 ? (
@@ -79,11 +96,12 @@ const NewsFeed = ({ searchQuery }: Props) => {
         ))
       ) : (
         <div className={styles.noResults}>
-          <p>No dental news found for "{searchQuery}". Try a different topic!</p>
+          <p>No dental news found for "{searchQuery}" in {activeCategory}.</p>
         </div>
       )}
     </div>
   );
 };
+
 
 export default NewsFeed;

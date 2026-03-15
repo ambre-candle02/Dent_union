@@ -102,3 +102,56 @@
   font-size: 12px;
   color: var(--text-muted);
 }
+
+.categoryTabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.categoryTabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.categoryTabs::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.tab, .activeTab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  color: var(--text-muted);
+}
+
+.tab:hover {
+  background: var(--light-teal);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.activeTab {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.noResults {
+  text-align: center;
+  padding: 60px 40px;
+  background: white;
+  border-radius: 8px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
