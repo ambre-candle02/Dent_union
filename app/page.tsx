@@ -8,10 +8,11 @@ import styles from './page.module.css';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeCategory, setActiveCategory] = React.useState('All');
 
   return (
     <main className={styles.main}>
-      <Navbar onSearch={setSearchQuery} />
+      <Navbar onSearch={setSearchQuery} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       
       <div className={`${styles.content} container`}>
         <div className={styles.leftCol}>
@@ -19,8 +20,9 @@ export default function Home() {
         </div>
         
         <div className={styles.centerCol}>
-          <NewsFeed searchQuery={searchQuery} />
+          <NewsFeed searchQuery={searchQuery} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
         </div>
+
         
         <div className={styles.rightCol}>
           <div className={`${styles.trending} card`}>

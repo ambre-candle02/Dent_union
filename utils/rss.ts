@@ -48,10 +48,11 @@ const BANNED_KEYWORDS = [
 
 
 const FEEDS = [
-  // 📚 Dental Journals (High Authority)
-  { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Dental Journals' },
-  { name: 'Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Journal+of+Dental+Research', category: 'Dental Journals' },
-  { name: 'Dentistry Today', url: 'https://www.dentistrytoday.com/feed/', category: 'Dental Journals' },
+  // 📚 Dental Magazines & Journals (High Authority)
+  { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Dental Magazines' },
+  { name: 'Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Journal+of+Dental+Research', category: 'Dental Magazines' },
+  { name: 'Dentistry Today', url: 'https://www.dentistrytoday.com/feed/', category: 'Dental Magazines' },
+
   
   // 🔬 Clinical Research & Advances
   { name: 'exocad Digital Workflows', url: 'https://news.google.com/rss/search?q=site:exocad.com/exoblog&hl=en-US&gl=US&ceid=US:en', category: 'Clinical Research' },

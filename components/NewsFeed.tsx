@@ -7,24 +7,26 @@ import styles from './NewsFeed.module.css';
 
 interface Props {
   searchQuery: string;
+  activeCategory: string;
+  onCategoryChange: (category: string) => void;
 }
 
 const categories = [
   'All', 
+  'Dental Magazines', 
   'Clinical Research', 
-  'Dental Journals', 
   'Education', 
   'Jobs', 
   'Events', 
   'Indian Dental News'
 ];
 
-const NewsFeed = ({ searchQuery }: Props) => {
+const NewsFeed = ({ searchQuery, activeCategory, onCategoryChange }: Props) => {
 
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All');
   const [lastUpdated, setLastUpdated] = useState<string>('');
+
 
   const fetchNews = async () => {
     try {
@@ -87,7 +89,8 @@ const NewsFeed = ({ searchQuery }: Props) => {
           <button 
             key={cat} 
             className={activeCategory === cat ? styles.activeTab : styles.tab}
-            onClick={() => setActiveCategory(cat)}
+            onClick={() => onCategoryChange(cat)}
+
           >
             {cat}
           </button>
