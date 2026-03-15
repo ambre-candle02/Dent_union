@@ -9,9 +9,48 @@ interface Props {
 }
 
 const VERIFIED_SOURCES = ['ADA News', 'FDI World Dental', 'IDA News', 'PubMed Dentistry'];
+const FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800', // Dental chair
+  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800', // Tools
+  'https://images.unsplash.com/photo-1445527815219-ecbfec67492e?auto=format&fit=crop&q=80&w=800', // Research
+  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=800', // Clinic
+  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800'  // Modern tech
+];
 
 const ArticleCard = ({ article }: Props) => {
   const isVerified = VERIFIED_SOURCES.includes(article.source);
+  
+  // Deterministic fallback based on title length or index
+  const getFallback = () => {
+    const index = (article.title.length + article.source.length) % FALLBACK_IMAGES.length;
+    return FALLBACK_IMAGES[index];
+  };
+
+  const currentImage = article.imageUrl || getFallback();
+
+
+  // JSON-LD for SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.title,
+    "description": article.summary,
+    "image": currentImage,
+    "datePublished": article.publishedDate,
+    "publisher": {
+      "@type": "Organization",
+      "name": article.source,
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://dent-union.vercel.app/logo.png"
+      }
+    },
+    "author": {
+      "@type": "Organization",
+      "name": article.source
+    }
+  };
+
 
   const timeAgo = (dateStr: string) => {
     try {
@@ -32,7 +71,12 @@ const ArticleCard = ({ article }: Props) => {
 
   return (
     <div className={`${styles.card} card fade-in`}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className={styles.header}>
+
         <div className={styles.sourceInfo}>
           <div className={styles.sourceLogo}>{article.source[0]}</div>
           <div>
@@ -70,11 +114,11 @@ const ArticleCard = ({ article }: Props) => {
         ) : (
           <div className={styles.imageContainer}>
             <img 
-              src={article.imageUrl} 
+              src={currentImage} 
               alt={article.title} 
               className={styles.image}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800';
+                (e.target as HTMLImageElement).src = FALLBACK_IMAGES[0];
               }}
             />
           </div>
