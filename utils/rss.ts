@@ -8,12 +8,15 @@ export interface NewsItem {
   summary: string;
   link: string;
   source: string;
+  sourceLogo?: string;
   publishedDate: string;
   category: string;
   imageUrl?: string;
   isVideo?: boolean;
   videoId?: string;
+  isVerified?: boolean;
 }
+
 
 const parser = new Parser({
   timeout: 10000,
@@ -45,18 +48,32 @@ const BANNED_KEYWORDS = [
 
 
 const FEEDS = [
-  // International Magazines & Journals
-  { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Research Updates' },
-  { name: 'Dentistry Today Magazine', url: 'https://www.dentistrytoday.com/feed/', category: 'Latest Dental News' },
-  { name: 'JADA Clinical Highlights', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/', category: 'Research Updates' },
-  { name: 'FDI Clinical Research', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Global Dentistry' },
+  // 📚 Dental Journals (High Authority)
+  { name: 'Nature: British Dental Journal', url: 'https://www.nature.com/bdj.rss', category: 'Dental Journals' },
+  { name: 'Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Journal+of+Dental+Research', category: 'Dental Journals' },
+  { name: 'Dentistry Today', url: 'https://www.dentistrytoday.com/feed/', category: 'Dental Journals' },
   
-  // Indian Clinical & Association Feeds
-  { name: 'IDA News (Official India)', url: 'https://ida.org.in/feed', category: 'Indian Dental News' },
-  { name: 'India Clinical Dentistry Search', url: 'https://news.google.com/rss/search?q=clinical+dentistry+india&hl=en-IN&gl=IN&ceid=IN:en', category: 'Indian Dental News' },
-  { name: 'Indian Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Indian+Journal+of+Dental+Research', category: 'Research Updates' },
-  { name: 'NDTV Dental Health India', url: 'https://feeds.feedburner.com/ndtvhealth-latest', category: 'Indian Dental News' },
+  // 🔬 Clinical Research & Advances
+  { name: 'PubMed: Clinical Dentistry', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+dentistry+case+reports', category: 'Clinical Research' },
+  { name: 'ADA Research News', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Clinical Research' },
+  { name: 'International Association for Dental Research', url: 'https://www.iadr.org/RSS.xml', category: 'Clinical Research' },
+  
+  // 🎓 Education & Resources
+  { name: 'NIDCR: Dental Education', url: 'https://www.nidcr.nih.gov/news-events/rss', category: 'Education' },
+  { name: 'WHO Oral Health Updates', url: 'https://www.who.int/rss-feeds/news-english.xml', category: 'Education' },
+  
+  // 💼 Dental Jobs (Global & India)
+  { name: 'Dental Tribune Jobs', url: 'https://www.dental-tribune.com/jobs/feed/', category: 'Jobs' },
+  
+  // 🎤 Events & Webinars
+  { name: 'FDI World Dental Events', url: 'https://www.fdiworlddental.org/rss.xml', category: 'Events' },
+  { name: 'ADA Conferences', url: 'https://www.ada.org/en/publications/ada-news/rss', category: 'Events' },
+
+  // 🇮🇳 Indian Professional Focus
+  { name: 'IDA Official (India)', url: 'https://ida.org.in/feed', category: 'Indian Dental News' },
+  { name: 'Indian Journal of Dental Research', url: 'https://pubmed.ncbi.nlm.nih.gov/rss/search/1/P3k7uH5Zp4Nl5yW8v/?term=Indian+Journal+of+Dental+Research', category: 'Indian Dental News' },
 ];
+
 
 
 function isMagazineQuality(item: any): boolean {
@@ -140,19 +157,21 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
 
 
           return {
-            id: item.guid || link,
-            title: item.title?.trim() || 'Dental Update',
-            summary: summary,
-            link: link,
-            source: feed.name,
-            publishedDate: item.pubDate || new Date().toISOString(),
-            category: feed.category,
-            imageUrl: isYouTube && videoId
-              ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
-              : genuineImage,
-            isVideo: isYouTube && videoId !== undefined,
-            videoId: videoId,
-          };
+          id: item.guid || link,
+          title: item.title?.trim() || 'Dental Update',
+          summary: summary,
+          link: link,
+          source: feed.name,
+          sourceLogo: `https://www.google.com/s2/favicons?sz=64&domain=${new URL(link).hostname}`,
+          publishedDate: item.pubDate || new Date().toISOString(),
+          category: feed.category,
+          imageUrl: isYouTube && videoId
+            ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
+            : genuineImage,
+          isVideo: isYouTube && videoId !== undefined,
+          videoId: videoId,
+          isVerified: true
+        };
         });
     }
   } catch (err) {

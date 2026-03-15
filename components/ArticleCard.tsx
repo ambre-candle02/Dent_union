@@ -53,6 +53,8 @@ const ArticleCard = ({ article }: Props) => {
 
 
   const currentImage = article.imageUrl || getFallback();
+  const sourceLogo = article.sourceLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.source)}&background=random`;
+
 
 
 
@@ -105,12 +107,15 @@ const ArticleCard = ({ article }: Props) => {
       <div className={styles.header}>
 
         <div className={styles.sourceInfo}>
-          <div className={styles.sourceLogo}>{article.source[0]}</div>
+          <div className={styles.sourceLogoWrap}>
+            <img src={sourceLogo} alt="" className={styles.logoImg} onError={(e) => (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${article.source[0]}` } />
+          </div>
           <div>
             <div className={styles.sourceNameRow}>
               <h4 className={styles.sourceName}>{article.source}</h4>
-              {isVerified && <span className={styles.verifiedBadge} title="Official Dental Authority">✓ Verified Source</span>}
+              {(isVerified || article.isVerified) && <span className={styles.verifiedBadge} title="Official Dental Authority">✓ Verified Source</span>}
             </div>
+
             <div className={styles.statusRow}>
               <span className={styles.timestamp}>{timeAgo(article.publishedDate)} • {article.category}</span>
               {article.isVideo && <span className={styles.liveBadge}>CLINICAL VIDEO</span>}

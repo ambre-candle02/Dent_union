@@ -23,11 +23,14 @@ const Navbar = ({ onSearch }: Props) => {
         </div>
         <div className={styles.links}>
           <a href="#" className={styles.active}>Home</a>
-          <a href="#">Network</a>
-          <a href="#">Research</a>
+          <a href="#">Dental News</a>
+          <a href="#">Clinical Research</a>
+          <a href="#">Dental Journals</a>
+          <a href="#">Education</a>
           <a href="#">Jobs</a>
           <a href="#">Events</a>
         </div>
+
         <div className={styles.profile}>
           <div className={styles.avatar}>DR</div>
         </div>

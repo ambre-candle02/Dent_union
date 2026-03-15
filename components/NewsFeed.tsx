@@ -9,9 +9,18 @@ interface Props {
   searchQuery: string;
 }
 
-const categories = ['All', 'Latest Dental News', 'Research Updates', 'Global Dentistry', 'Clinical Cases', 'Indian Dental News'];
+const categories = [
+  'All', 
+  'Clinical Research', 
+  'Dental Journals', 
+  'Education', 
+  'Jobs', 
+  'Events', 
+  'Indian Dental News'
+];
 
 const NewsFeed = ({ searchQuery }: Props) => {
+
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
