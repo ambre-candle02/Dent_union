@@ -52,8 +52,36 @@ function isDentalRelated(item: any): boolean {
 }
 
 
+async function fetchFromNewsData(): Promise<NewsItem[]> {
+  const apiKey = 'pub_11ccc59aed8b4c58bdd89cd6d8286e2f';
+  const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=dentistry%20OR%20"dental%20care"%20OR%20"oral%20health"&language=en`;
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status === 'success' && data.results) {
+      return data.results.map((article: any) => ({
+        id: article.article_id,
+        title: article.title,
+        summary: article.description || 'Dental news update from global sources.',
+        link: article.link,
+        source: article.source_id.toUpperCase(),
+        publishedDate: article.pubDate,
+        category: 'Latest Dental News',
+        imageUrl: article.image_url,
+        isVideo: false
+      }));
+    }
+  } catch (err) {
+    console.error('NewsData API Error:', err);
+  }
+  return [];
+}
+
 export async function fetchAllNews(): Promise<NewsItem[]> {
-  const feedPromises = FEEDS.map(async (feed: any) => {
+  // Parallel fetch: RSS + NewsData API
+  const rssPromises = FEEDS.map(async (feed: any) => {
     try {
       const parsed = await parser.parseURL(feed.url);
       return parsed.items
@@ -64,7 +92,6 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
           const videoId = isYouTube ? extractYouTubeId(link) : undefined;
 
           let summary = item.contentSnippet || item.contentEncoded || item.content || 'Click to read full details...';
-          // Remove HTML tags thoroughly
           summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
           if (summary.length > 250) summary = summary.substring(0, 247) + '...';
 
@@ -91,10 +118,13 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
     }
   });
 
-  const results = await Promise.allSettled(feedPromises);
-  const allItems: NewsItem[] = results.flatMap((result: any) => 
+  const apiPromise = fetchFromNewsData();
+  const allResults = await Promise.allSettled([...rssPromises, apiPromise]);
+  
+  const allItems: NewsItem[] = allResults.flatMap((result: any) => 
     result.status === 'fulfilled' ? result.value : []
   );
+
 
   const seenLinks = new Set<string>();
   const seenTitles = new Set<string>();
