@@ -36,23 +36,23 @@ export async function GET() {
     }
 
     if (shouldUpdate) {
-      console.log('🔄 DentUnion Sync: Initiating authentic dental record harvest...');
-      const startTime = Date.now();
-      
+      console.log('🔄 DentUnion Sync: Initiating harvest...');
       try {
         const freshNews = await fetchAllNews();
-        if (freshNews.length > 0) {
-          fs.writeFileSync(DB_PATH, JSON.stringify(freshNews, null, 2));
+        if (freshNews && freshNews.length > 0) {
           news = freshNews;
-          console.log(`✅ Sync Success: ${freshNews.length} articles updated in ${Date.now() - startTime}ms`);
-        } else {
-          console.warn('⚠️ Sync Alert: No new dental articles found. Keeping stable cache.');
+          // Try to write but don't crash if it's a read-only env (like Vercel)
+          try {
+            fs.writeFileSync(DB_PATH, JSON.stringify(freshNews, null, 2));
+          } catch (e) {
+            console.warn('⚠️ Cache Write Skipped (Read-only System)');
+          }
         }
       } catch (syncError) {
-        console.error('❌ Sync Critical Failure: Check RSS Sources or Network. Serving stable cache.');
-        console.error('Stack:', syncError instanceof Error ? syncError.message : syncError);
+        console.error('❌ Sync Failed. Fallback to cache.');
       }
     }
+
 
 
     return NextResponse.json(news);
