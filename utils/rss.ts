@@ -61,17 +61,23 @@ async function fetchFromNewsData(): Promise<NewsItem[]> {
     const data = await response.json();
     
     if (data.status === 'success' && data.results) {
-      return data.results.map((article: any) => ({
-        id: article.article_id,
-        title: article.title || 'Global Dental News',
-        summary: article.description || 'Update from global dental records.',
-        link: article.link,
-        source: article.source_id?.toUpperCase() || 'GLOBAL NEWS',
-        publishedDate: article.pubDate || new Date().toISOString(),
-        category: 'Latest Dental News',
-        imageUrl: article.image_url,
-        isVideo: false
-      }));
+      return data.results.map((article: any) => {
+        let summary = article.description || article.content || 'Dental news update from global sources.';
+        summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+        if (summary.length > 180) summary = summary.substring(0, 177) + '...';
+
+        return {
+          id: article.article_id,
+          title: article.title || 'Global Dental News',
+          summary: summary,
+          link: article.link,
+          source: article.source_id?.toUpperCase() || 'GLOBAL NEWS',
+          publishedDate: article.pubDate || new Date().toISOString(),
+          category: 'Latest Dental News',
+          imageUrl: article.image_url,
+          isVideo: false
+        };
+      });
     }
   } catch (err) {
     console.error('NewsData API Error:', err);
@@ -95,7 +101,7 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
         
         let summary = item.description || item.content || 'Click to read full details...';
         summary = summary.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
-        if (summary.length > 250) summary = summary.substring(0, 247) + '...';
+        if (summary.length > 180) summary = summary.substring(0, 177) + '...';
 
         return {
           id: item.guid || link,
@@ -118,6 +124,7 @@ async function fetchFromRSS(feed: any): Promise<NewsItem[]> {
   }
   return [];
 }
+
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
   // Parallel fetch: RSS (via API) + NewsData API
